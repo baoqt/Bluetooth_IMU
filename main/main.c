@@ -122,13 +122,13 @@ static void TG0T0_task(void *arg)
 		//meas.time[meas.head] = clock();
 		
 //		printf("Task 0 - measure:\nHead @ %d\n\n", meas.head);
-		meas.AX[meas.head] = ((float) meas.CAX - meas.AXoff) * 0.00001525878f/* * 0.0000610361f */;
-		meas.AY[meas.head] = ((float) meas.CAY - meas.AYoff) * 0.00001525878f/* * 0.0000610361f */;
-		meas.AZ[meas.head] = ((float) meas.CAZ - meas.AZoff) * 0.00001525878f/* * 0.0000610361f */;
+		meas.AX[meas.head] = ((float) meas.CAX - meas.AXoff) * 0.0011975f;
+		meas.AY[meas.head] = ((float) meas.CAY - meas.AYoff) * 0.0011975f;
+		meas.AZ[meas.head] = ((float) meas.CAZ - meas.AZoff) * 0.0011975f;
 
-		meas.GX[meas.head] = ((float) meas.CGX - meas.GXoff) * 0.00001525878f/* * 0.0076295109f */;
-		meas.GY[meas.head] = ((float) meas.CGY - meas.GYoff) * 0.00001525878f/* * 0.0076295109f */;
-		meas.GZ[meas.head] = ((float) meas.CGZ - meas.GZoff) * 0.00001525878f/* * 0.0076295109f */;
+		meas.GX[meas.head] = ((float) meas.CGX - meas.GXoff) * 0.0152590219f;
+		meas.GY[meas.head] = ((float) meas.CGY - meas.GYoff) * 0.0152590219f;
+		meas.GZ[meas.head] = ((float) meas.CGZ - meas.GZoff) * 0.0152590219f;
 		
 		meas.head = (meas.head + 1) % FIFO_DEPTH;
 		
