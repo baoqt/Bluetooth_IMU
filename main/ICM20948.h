@@ -23,25 +23,25 @@ typedef struct measurement
 	float GYoff;
 	float GZoff;
 
-	int16_t CAX;
-	int16_t CAY;
-	int16_t CAZ;
+	volatile int16_t CAX;
+	volatile int16_t CAY;
+	volatile int16_t CAZ;
 
-	int16_t CGX;
-	int16_t CGY;
-	int16_t CGZ;
+	volatile int16_t CGX;
+	volatile int16_t CGY;
+	volatile int16_t CGZ;
 
-	float AX[FIFO_DEPTH];								// IMU measurement FIFO
-	float AY[FIFO_DEPTH];								// Accelerometer processed data
-	float AZ[FIFO_DEPTH];
+	volatile float AX[FIFO_DEPTH];						// IMU measurement FIFO
+	volatile float AY[FIFO_DEPTH];						// Accelerometer processed data
+	volatile float AZ[FIFO_DEPTH];
 
-	float GX[FIFO_DEPTH];								// Gyroscope processed data
-	float GY[FIFO_DEPTH];
-	float GZ[FIFO_DEPTH];
+	volatile float GX[FIFO_DEPTH];						// Gyroscope processed data
+	volatile float GY[FIFO_DEPTH];
+	volatile float GZ[FIFO_DEPTH];
 	
-	int head;											// Entry of FIFO
-	int tail;											// Exit of FIFO
-	int size;											// Size of FIFO
+	volatile int head;									// Entry of FIFO
+	volatile int tail;									// Exit of FIFO
+	volatile int size;									// Size of FIFO
 }measurement;
 
 typedef struct magnetometer
@@ -194,6 +194,7 @@ typedef struct magnetometer
 #define ICM20948_ACCEL_INTEL_CTRL           		0x12
 #define ICM20948_ACCEL_WOM_THR              		0x13
 #define ICM20948_ACCEL_CONFIG_1             		0x14
+#define ICM20948_ACCEL_CONFIG_1_DLPFCFG_MASK		0x38
 #define ICM20948_ACCEL_CONFIG_1_FS_SEL_MASK			0x06
 #define ICM20948_ACCEL_CONFIG_1_FS_2G				0x00
 #define ICM20948_ACCEL_CONFIG_1_FS_4G				0x01
@@ -201,6 +202,7 @@ typedef struct magnetometer
 #define ICM20948_ACCEL_CONFIG_1_FS_16G				0x03
 #define ICM20948_ACCEL_CONFIG_1_FCHOICE_MASK		0x01
 #define ICM20948_ACCEL_CONFIG_2             		0x15
+#define ICM20948_ACCEL_CONFIG_2_DEC3_CFG_MASK		0x03
 #define ICM20948_ACCEL_CONFIG_2_AX_ST_EN_REG_MASK	0x10
 #define ICM20948_ACCEL_CONFIG_2_AY_ST_EN_REG_MASK	0x08
 #define ICM20948_ACCEL_CONFIG_2_AZ_ST_EN_REG_MASK	0x04

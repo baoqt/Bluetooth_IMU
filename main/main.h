@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 #include <float.h>
 #include <time.h>
 
@@ -112,6 +113,14 @@ static volatile bool connected = false;
 static volatile bool forward = false;
 static char measurement_buffer[100] = "\0";
 static char message_buffer[1000] = "\0";
+
+#define MEASUREMENT_BIT_LENGTH  16
+#define ACCEL_FULL_SCALE        4
+#define GYRO_FULL_SCALE         500
+#define GRAVITY_CONSTANT        9.81f
+
+static float accel_multiplier = (ACCEL_FULL_SCALE * GRAVITY_CONSTANT) / pow(2, MEASUREMENT_BIT_LENGTH - 1);
+static float gyro_multiplier = GYRO_FULL_SCALE / pow(2, MEASUREMENT_BIT_LENGTH - 1);
 
 void TIMG0_T0_init(int timer_idx, bool auto_reload, double timer_interval_sec);
 void TIMG1_T0_init(int timer_idx, bool auto_reload, double timer_interval_sec);

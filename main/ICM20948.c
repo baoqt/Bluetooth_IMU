@@ -64,9 +64,9 @@ void ICM20948_calibrate(volatile measurement* meas, magnetometer* magno, int tri
 		meas->GXoff += meas->CGX;
 		meas->GYoff += meas->CGY;
 		meas->GZoff += meas->CGZ;
-		magno->MXoff += magno->CMX;
-		magno->MYoff += magno->CMY;
-		magno->MZoff += magno->CMZ;
+//		magno->MXoff += magno->CMX;
+//		magno->MYoff += magno->CMY;
+//		magno->MZoff += magno->CMZ;
 	}
 	
 	meas->AXoff /= trials;
@@ -75,14 +75,14 @@ void ICM20948_calibrate(volatile measurement* meas, magnetometer* magno, int tri
 	meas->GXoff /= trials;
 	meas->GYoff /= trials;
 	meas->GZoff /= trials;
-	magno->MXoff /= trials;
-	magno->MYoff /= trials;
-	magno->MZoff /= trials;
+//	magno->MXoff /= trials;
+//	magno->MYoff /= trials;
+//	magno->MZoff /= trials;
 	
-	printf("Calibration completed:\nAXoffset: %f		GXoffset: %f		MXoffset: %f\nAYoffset: %f		GYoffset: %f		MYoffset: %f\nAZoffset: %f		GZoffset: %f		MZoffset: %f\n", 
-		meas->AXoff, meas->GXoff, magno->MXoff,
-		meas->AYoff, meas->GYoff, magno->MYoff,
-		meas->AZoff, meas->GZoff, magno->MZoff);	
+	printf("Calibration completed:\nAXoffset: 0x%04X		GXoffset: 0x%04X		MXoffset: 0x%04X\nAYoffset: 0x%04X		GYoffset: 0x%04X		MYoffset: 0x%04X\nAZoffset: 0x%04X		GZoffset: 0x%04X		MZoffset: 0x%04X\n", 
+		(uint16_t) meas->AXoff, (uint16_t) meas->GXoff, (uint16_t) magno->MXoff,
+		(uint16_t) meas->AYoff, (uint16_t) meas->GYoff, (uint16_t) magno->MYoff,
+		(uint16_t) meas->AZoff, (uint16_t) meas->GZoff, (uint16_t) magno->MZoff);	
 	printf("---------------\n\n");
 
 	msg.length = 1;
@@ -419,10 +419,27 @@ void ICM20948_ConfigureAccelerometerLowPassFilter()
 
 	I2C0_write(&msg);
 
-	msg.register_addr = ICM20948_ACCEL_CONFIG_2;
+	msg.register_addr = ICM20948_ACCEL_SMPLRT_DIV_1;
+	
+	*msg.data = 0x00;
+	I2C0_write(&msg);
+
+	msg.register_addr = ICM20948_ACCEL_SMPLRT_DIV_2;
+	
+	*msg.data = 0x0A;										// Reduced to 100Hz
+	I2C0_write(&msg);
+
+	msg.register_addr = ICM20948_ACCEL_CONFIG_1;
 	
 	I2C0_read(&msg);
-	*msg.data |= ICM20948_ACCEL_CONFIG_1_FCHOICE_MASK;
+	*msg.data &= ~ICM20948_ACCEL_CONFIG_1_DLPFCFG_MASK;
+	*msg.data |= (0x03 << 4) | ICM20948_ACCEL_CONFIG_1_FCHOICE_MASK;
+	I2C0_write(&msg);
+
+	msg.register_addr = ICM20948_ACCEL_CONFIG_2;
+
+	I2C0_read(&msg);
+	*msg.data &= ~ICM20948_ACCEL_CONFIG_2_DEC3_CFG_MASK;
 	I2C0_write(&msg);
 
 	free(msg.data);	
@@ -489,9 +506,7 @@ void ICM20948_init(volatile measurement* meas, magnetometer* magno)
 	// ICM enable interrupt
 	// Enable ODR_ALIGN_EN
 	// GYRO sample rate div = 10
-	// ACCEL sample rate div = 10
 	// GYRO enable DLPF
-	// ACCEL enable DLPF
 
 	ICM20948_SelfTest(meas);
 	ICM20948_setMagContinuousMeasurementMode();

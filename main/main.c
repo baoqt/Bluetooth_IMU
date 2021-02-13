@@ -122,15 +122,15 @@ static void TG0T0_task(void *arg)
 		//meas.time[meas.head] = clock();
 		
 //		printf("Task 0 - measure:\nHead @ %d\n\n", meas.head);
-		meas.AX[meas.head] = ((float) meas.CAX - meas.AXoff) * 0.0011975f;
-		meas.AY[meas.head] = ((float) meas.CAY - meas.AYoff) * 0.0011975f;
-		meas.AZ[meas.head] = ((float) meas.CAZ - meas.AZoff) * 0.0011975f;
+		meas.AX[meas.head] = ((float) meas.CAX - meas.AXoff) * accel_multiplier/* 0.0011975f */;
+		meas.AY[meas.head] = ((float) meas.CAY - meas.AYoff) * accel_multiplier/* 0.0011975f */;
+		meas.AZ[meas.head] = ((float) meas.CAZ - meas.AZoff) * accel_multiplier/* 0.0011975f */;
 
-		meas.GX[meas.head] = ((float) meas.CGX - meas.GXoff) * 0.0152590219f;
-		meas.GY[meas.head] = ((float) meas.CGY - meas.GYoff) * 0.0152590219f;
-		meas.GZ[meas.head] = ((float) meas.CGZ - meas.GZoff) * 0.0152590219f;
+		meas.GX[meas.head] = ((float) meas.CGX - meas.GXoff) * gyro_multiplier/* 0.0152590219f */;
+		meas.GY[meas.head] = ((float) meas.CGY - meas.GYoff) * gyro_multiplier/* 0.0152590219f */;
+		meas.GZ[meas.head] = ((float) meas.CGZ - meas.GZoff) * gyro_multiplier/* 0.0152590219f */;
 		
-		meas.head = (meas.head + 1) % FIFO_DEPTH;
+		meas.head = (meas.head + 1) & (FIFO_DEPTH - 1);
 		
 		// Values rinted here for diagnostics but can be removed if not needed.
 		//char buf1[100];
@@ -159,7 +159,7 @@ static void TG1T0_task(void *arg)
 //				printf("Task 1B - while loop:\n");
 				strcat(message_buffer, measurement_buffer);
 //				printf("Task 1C - while loop:\n");
-				meas.tail = (meas.tail + 1) % FIFO_DEPTH;
+				meas.tail = (meas.tail + 1) & (FIFO_DEPTH - 1);
 			}
 			
 			if (forward)
