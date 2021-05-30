@@ -426,7 +426,7 @@ void ICM20948_ConfigureAccelerometerLowPassFilter()
 
 	msg.register_addr = ICM20948_ACCEL_SMPLRT_DIV_2;
 	
-	*msg.data = 0x0A;										// Reduced to 100Hz
+	*msg.data = 0x05;										// Reduced to 100Hz
 	I2C0_write(&msg);
 
 	msg.register_addr = ICM20948_ACCEL_CONFIG_1;
@@ -443,6 +443,76 @@ void ICM20948_ConfigureAccelerometerLowPassFilter()
 	I2C0_write(&msg);
 
 	free(msg.data);	
+}
+
+void ICM20948_enableFullFIFO()
+{
+	msg.device_addr = ICM20948_DEFAULT_ADDRESS;
+	msg.register_addr = ICM20948_REG_BANK_SEL;
+	msg.data = malloc(1);
+	msg.length = 1;
+
+	*msg.data = ICM20948_USER_BANK_0;
+
+	I2C0_write(&msg);
+
+	msg.register_addr = ICM20948_USER_CTRL;
+
+	*msg.data = ICM20948_USER_CTRL_FIFO_EN;
+	I2C0_write(&msg);
+
+	msg.register_addr = ICM20948_FIFO_EN_2;
+	
+	*msg.data = 0x1E;
+	I2C0_write(&msg);
+
+	free(msg.data);
+}
+
+void ICM20948_readFullFIFO(volatile measurement* meas)
+{
+	msg.device_addr = ICM20948_DEFAULT_ADDRESS;
+	msg.register_addr = ICM20948_REG_BANK_SEL;
+	msg.data = malloc(1);
+	msg.length = 1;
+
+	*msg.data = ICM20948_USER_BANK_0;
+
+	I2C0_write(&msg);
+
+	msg.register_addr = ICM20948_FIFO_R_W;
+
+	I2C0_read(&msg);
+	meas->CAX = ((int16_t) *msg.data << 8);
+	I2C0_read(&msg);
+	meas->CAX |= *msg.data;
+
+	I2C0_read(&msg);
+	meas->CAY = ((int16_t) *msg.data << 8);
+	I2C0_read(&msg);
+	meas->CAY |= *msg.data;
+
+	I2C0_read(&msg);
+	meas->CAZ = ((int16_t) *msg.data << 8);
+	I2C0_read(&msg);
+	meas->CAZ |= *msg.data;
+
+	I2C0_read(&msg);
+	meas->CGX = ((int16_t) *msg.data << 8);
+	I2C0_read(&msg);
+	meas->CGX |= *msg.data;
+
+	I2C0_read(&msg);
+	meas->CGY = ((int16_t) *msg.data << 8);
+	I2C0_read(&msg);
+	meas->CGY |= *msg.data;
+
+	I2C0_read(&msg);
+	meas->CGZ = ((int16_t) *msg.data << 8);
+	I2C0_read(&msg);
+	meas->CGZ |= *msg.data;
+
+	free(msg.data);
 }
 
 void ICM20948_setMagContinuousMeasurementMode()
@@ -502,6 +572,7 @@ void ICM20948_init(volatile measurement* meas, magnetometer* magno)
 	ICM20948_setFullScaleGyroRange(ICM20948_GYRO_CONFIG_1_FS_500_DPS);
 	ICM20948_setFullScaleAccelRange(ICM20948_ACCEL_CONFIG_1_FS_4G);
 	ICM20948_ConfigureAccelerometerLowPassFilter();
+	ICM20948_enableFullFIFO();
 
 	// ICM enable interrupt
 	// Enable ODR_ALIGN_EN

@@ -73,6 +73,7 @@ typedef struct magnetometer
 #define ICM20948_WHO_AM_I				    		0x00
 
 #define ICM20948_USER_CTRL                  		0x03
+#define ICM20948_USER_CTRL_FIFO_EN					0x40
 #define ICM20948_LP_CONFIG                  		0x05
 
 #define ICM20948_PWR_MGMT_1                 		0x06
@@ -276,7 +277,8 @@ void ICM20948_clearGyroSelfTest();
 void ICM20948_clearAccelSelfTest();
 void ICM20948_setFullScaleGyroRange(uint8_t range);
 void ICM20948_setFullScaleAccelRange(uint8_t range);
-uint8_t ICM20948_getFullScaleAccelRange();
+void ICM20948_enableFullFIFO();
+void ICM20948_readFullFIFO(volatile measurement* meas);
 
 void ICM20948_ConfigureAccelerometerLowPassFilter();
 void ICM20948_setMagContinuousMeasurementMode();

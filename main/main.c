@@ -5,47 +5,16 @@ void app_main()
     printf("\nBootup complete\n\n");
 	GPIO_init();
 	printf("GPIO intialized\n");
-	I2C0_init();
-	printf("I2C0 initialized\n");
-	ICM20948_init(&meas, &magno);
-	printf("ICM20948 initialized\n");
-	ICM20948_calibrate(&meas, &magno, 100);
-	printf("ICM20948 calibrated\n");
+	ICM20689_init(&meas);
+	printf("ICM20689 initialized\n");
+	ICM20689_calibrate(&meas, 100);
+	printf("ICM20689 calibrated\n");
 	BL_SPP_init();
 	printf("Bluetooth SPP initialized\n");
 	TIMG0_T0_init(TIMER_0, true, TIMER_GROUP_0_MEAS_SEC);
 	TIMG1_T0_init(TIMER_0, true, TIMER_GROUP_1_WAIT_SEC);
 	printf("Timers initialized\n");
 	printf("\n");
-
-//	testMsg.device_addr = ICM20948_DEFAULT_ADDRESS;
-//	testMsg.register_addr = ICM20948_REG_BANK_SEL;
-//	testMsg.data = malloc(1);
-//	testMsg.length = 1;
-//
-//	*testMsg.data = ICM20948_USER_BANK_0;
-//
-//	I2C0_write(&testMsg);
-//
-//	testMsg.register_addr = ICM20948_WHO_AM_I;
-//	
-//	printf("Test read on reg WHO_AM_I (0x00)\nSending:\nDevice addr: 0x%02X, register addr: 0x%02X, data[0]: 0x%02X\n", 
-//		testMsg.device_addr, testMsg.register_addr, testMsg.data[0]);
-//	
-//	I2C0_read(&testMsg);
-//	
-//	printf("Received:\nDevice addr: 0x%02X, register addr: 0x%02X, data[0]: 0x%02X\n",
-//		testMsg.device_addr, testMsg.register_addr, testMsg.data[0]);
-//	if (*testMsg.data == 0xEA)
-//	{
-//		printf("Test read successful\n\n");
-//	} 
-//	else
-//	{
-//		printf("Test read failed\n\n");
-//	}
-//
-//	free(testMsg.data);
 
     xTaskCreate(TG0T0_task, "timer_evt_task", 2048, NULL, 7, NULL);
 	xTaskCreate(TG1T0_task, "timer_evt_task", 2048, NULL, 5, NULL);
@@ -109,32 +78,17 @@ static void TG0T0_task(void *arg)
 	{
         timer_event_t evt;
         xQueueReceive(timer_queue_0, &evt, portMAX_DELAY);
-		ICM20948_getMeas(&meas);
-		//ICM20948_getComp(&magno);
-
-		//magno.MX = (float) magno.CMX * 0.0000001500f;
-		//magno.MY = (float) magno.CMY * 0.0000001500f;
-		//magno.MZ = (float) magno.CMZ * 0.0000001500f;
-
-		//magno.MX = ((float) magno.CMX) * magCalibrationX * 4800.0f * 2.0f * 10.0f / 65536.0f - mag_bias[0];
-		//magno.MY = ((float) magno.CMY) * magCalibrationY * 4800.0f * 2.0f * 10.0f / 65536.0f - mag_bias[1];
-		//magno.MZ = ((float) magno.CMZ) * magCalibrationZ * 4800.0f * 2.0f * 10.0f / 65536.0f - mag_bias[2];
-		//meas.time[meas.head] = clock();
+		ICM20689_getMeas(&meas);
 		
-//		printf("Task 0 - measure:\nHead @ %d\n\n", meas.head);
-		meas.AX[meas.head] = ((float) meas.CAX - meas.AXoff) * accel_multiplier/* 0.0011975f */;
-		meas.AY[meas.head] = ((float) meas.CAY - meas.AYoff) * accel_multiplier/* 0.0011975f */;
-		meas.AZ[meas.head] = ((float) meas.CAZ - meas.AZoff) * accel_multiplier/* 0.0011975f */;
+		meas.AX[meas.head] = ((float) meas.CAX - meas.AXoff) * accel_multiplier;
+		meas.AY[meas.head] = ((float) meas.CAY - meas.AYoff) * accel_multiplier;
+		meas.AZ[meas.head] = ((float) meas.CAZ - meas.AZoff) * accel_multiplier;
 
-		meas.GX[meas.head] = ((float) meas.CGX - meas.GXoff) * gyro_multiplier/* 0.0152590219f */;
-		meas.GY[meas.head] = ((float) meas.CGY - meas.GYoff) * gyro_multiplier/* 0.0152590219f */;
-		meas.GZ[meas.head] = ((float) meas.CGZ - meas.GZoff) * gyro_multiplier/* 0.0152590219f */;
-		
+		meas.GX[meas.head] = ((float) meas.CGX - meas.GXoff) * gyro_multiplier;
+		meas.GY[meas.head] = ((float) meas.CGY - meas.GYoff) * gyro_multiplier;
+		meas.GZ[meas.head] = ((float) meas.CGZ - meas.GZoff) * gyro_multiplier;
+
 		meas.head = (meas.head + 1) & (FIFO_DEPTH - 1);
-		
-		// Values rinted here for diagnostics but can be removed if not needed.
-		//char buf1[100];
-		//sprintf(buf1, "%f, %f, %f, %f, %f, %f, %ld\n", accel.AX, accel.AY, accel.AZ, gyro.GX, gyro.GY, gyro.GZ, clock());
 	}
 }
 
@@ -147,24 +101,20 @@ static void TG1T0_task(void *arg)
 		
 		if (connected)
 		{
-//			printf("Task 1 - forward:\nTail @ %d\n\n", meas.tail);
 			int snap = meas.head;
 			while (meas.tail != snap)									// Take items off the FIFO & format message
 			{
-				forward = true;
-//				printf("Task 1A - while loop:\n");
+				forward = true;;
 				sprintf(measurement_buffer, ", %f, %f, %f, %f, %f, %f\n", 
 					meas.AX[meas.tail], meas.AY[meas.tail], meas.AZ[meas.tail],
 					meas.GX[meas.tail], meas.GY[meas.tail], meas.GZ[meas.tail]);
-//				printf("Task 1B - while loop:\n");
 				strcat(message_buffer, measurement_buffer);
-//				printf("Task 1C - while loop:\n");
+				;
 				meas.tail = (meas.tail + 1) & (FIFO_DEPTH - 1);
 			}
 			
 			if (forward)
 			{
-//				printf("Task 1 - forward finished:\nTail @ %d\n\n", meas.tail);
 				esp_spp_write(HANDLER, strlen(message_buffer), (uint8_t *)message_buffer);
 				memcpy(message_buffer, "\0", 1);
 				forward = false;
@@ -172,7 +122,6 @@ static void TG1T0_task(void *arg)
 		}
 		else															// Blink the LED until connection established
 		{
-//			printf("Task 1 - blink:\n");
 			gpio_set_level(GPIO_NUM_2, 1);
 			vTaskDelay(100 / portTICK_PERIOD_MS);
 			gpio_set_level(GPIO_NUM_2, 0);
@@ -272,6 +221,7 @@ void BL_SPP_init(void)
     }
 
     if ((ret = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)) != ESP_OK) {
+		printf("X\n");
         ESP_LOGE(SPP_TAG, "%s enable controller failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
@@ -334,9 +284,11 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 			ESP_LOGI(SPP_TAG, "ESP_SPP_OPEN_EVT");
 			break;
 		case ESP_SPP_CLOSE_EVT:
-			ESP_LOGI(SPP_TAG, "ESP_SPP_CLOSE_EVT"); 
+			ESP_LOGI(SPP_TAG, "ESP_SPP_CLOSE_EVT");
 			timer_pause(TIMER_GROUP_0, TIMER_0);
 			timer_pause(TIMER_GROUP_1, TIMER_0);
+			ICM20689_toggleSensors(0);
+			//ICM20689_toggleFIFO(0);
 			connected = false;
 			timer_set_alarm_value(TIMER_GROUP_1, TIMER_0, TIMER_GROUP_1_WAIT_SEC * TIMER_SCALE);
 			timer_start(TIMER_GROUP_1, TIMER_0);
@@ -355,16 +307,17 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 			ESP_LOGI(SPP_TAG, "ESP_SPP_CONG_EVT");
 			break;
 		case ESP_SPP_WRITE_EVT:
-		//	ESP_LOGI(SPP_TAG, "ESP_SPP_WRITE_EVT");
 			break;
 		case ESP_SPP_SRV_OPEN_EVT:
 			ESP_LOGI(SPP_TAG, "ESP_SPP_SRV_OPEN_EVT");
 			HANDLER = param->srv_open.handle;
-			timer_start(TIMER_GROUP_0, TIMER_0);
+			ICM20689_toggleSensors(1);
+			//ICM20689_toggleFIFO(1);
 			timer_pause(TIMER_GROUP_1, TIMER_0);
 			connected = true;
 			timer_set_alarm_value(TIMER_GROUP_1, TIMER_0, TIMER_GROUP_1_FIFO_SEC * TIMER_SCALE);
 			timer_start(TIMER_GROUP_1, TIMER_0);
+			timer_start(TIMER_GROUP_0, TIMER_0);
 			break;
 		default:
 			break;

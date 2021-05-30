@@ -13,9 +13,13 @@
 
 #include "nvs.h"
 #include "nvs_flash.h"
+
+#ifndef __FREERTOS__
+#define __FREERTOS__
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+#endif
 
 #include "esp_system.h"
 #include "esp_types.h"
@@ -35,8 +39,9 @@
 #include "soc/soc.h"
 #include "soc/timer_group_struct.h"
 
-#include "I2C.h"
-#include "ICM20948.h"
+//#include "I2C.h"
+//#include "ICM20948.h"
+#include "ICM20689.h"
 
 ///////////////////////////////////////////////////////////////////
 //	Bluetooth SPP defines
@@ -100,14 +105,16 @@ xQueueHandle timer_queue_1;
 
 #define TIMER_DIVIDER           16                                  // Hardware timer clock divider
 #define TIMER_SCALE             (TIMER_BASE_CLK / TIMER_DIVIDER)    // convert counter value to seconds
-#define TIMER_GROUP_0_MEAS_SEC  (0.01)                              // IMU measurement period
+#define TIMER_GROUP_0_MEAS_SEC  (0.01)                             // IMU measurement period
 #define TIMER_GROUP_1_WAIT_SEC  (3.0)                               // Connection status LED period
 #define TIMER_GROUP_1_FIFO_SEC  (0.1)                               // FIFO clearing & BT message period
 
-volatile measurement meas = {.AXoff = 0, .AYoff = 0, .AZoff = 0,
-                             .GXoff = 0, .GYoff = 0, .GZoff = 0,
-                             .head = 0, .tail = 0, .size = FIFO_DEPTH};
-magnetometer magno;
+volatile measurement meas = 
+{
+    .AXoff = 0, .AYoff = 0, .AZoff = 0,
+    .GXoff = 0, .GYoff = 0, .GZoff = 0,
+    .head = 0, .tail = 0, .size = FIFO_DEPTH
+};
 
 static volatile bool connected = false;
 static volatile bool forward = false;
