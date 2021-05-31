@@ -270,9 +270,8 @@ void ICM20689_setFullScaleGyroRange(uint8_t range);
 void ICM20689_setFullScaleAccelRange(uint8_t range);
 void ICM20689_setSampleRate(uint16_t rate);
 
+void ICM20689_toggleFIFO(uint8_t state);
 void ICM20689_toggleSensors(uint8_t state);
-void ICM20689_enableFullFIFO();
-void ICM20689_disableFullFIFO();
 int ICM20689_readFullFIFO(volatile measurement* meas);
 
 void ICM20689_ConfigureLowPassFilter();

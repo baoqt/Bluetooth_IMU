@@ -7,8 +7,6 @@ void app_main()
 	printf("GPIO intialized\n");
 	ICM20689_init(&meas);
 	printf("ICM20689 initialized\n");
-	ICM20689_calibrate(&meas, 100);
-	printf("ICM20689 calibrated\n");
 	BL_SPP_init();
 	printf("Bluetooth SPP initialized\n");
 	TIMG0_T0_init(TIMER_0, true, TIMER_GROUP_0_MEAS_SEC);
@@ -78,17 +76,32 @@ static void TG0T0_task(void *arg)
 	{
         timer_event_t evt;
         xQueueReceive(timer_queue_0, &evt, portMAX_DELAY);
-		ICM20689_getMeas(&meas);
-		
-		meas.AX[meas.head] = ((float) meas.CAX - meas.AXoff) * accel_multiplier;
-		meas.AY[meas.head] = ((float) meas.CAY - meas.AYoff) * accel_multiplier;
-		meas.AZ[meas.head] = ((float) meas.CAZ - meas.AZoff) * accel_multiplier;
+		uint16_t fifoCount = ICM20689_readFullFIFO(&meas);
+		if (fifoCount > 0)
+		{
+			for (int i = 0; i < fifoCount; i += 12)
+			{
+				sprintf(measurement_buffer, ", %f, %f, %f, %f, %f, %f\n", 
+					(((float) ((int16_t) ((meas.FIFO[i + 0] << 8) | meas.FIFO[i + 1]))) - meas.AXoff) * accel_multiplier,
+					(((float) ((int16_t) ((meas.FIFO[i + 2] << 8) | meas.FIFO[i + 3]))) - meas.AYoff) * accel_multiplier,
+					(((float) ((int16_t) ((meas.FIFO[i + 4] << 8) | meas.FIFO[i + 5]))) - meas.AZoff) * accel_multiplier,
+					(((float) ((int16_t) ((meas.FIFO[i + 6] << 8) | meas.FIFO[i + 7]))) - meas.GXoff) * gyro_multiplier,
+					(((float) ((int16_t) ((meas.FIFO[i + 8] << 8) | meas.FIFO[i + 9]))) - meas.GYoff) * gyro_multiplier,
+					(((float) ((int16_t) ((meas.FIFO[i + 10] << 8) | meas.FIFO[i + 11]))) - meas.GZoff) * gyro_multiplier);
 
-		meas.GX[meas.head] = ((float) meas.CGX - meas.GXoff) * gyro_multiplier;
-		meas.GY[meas.head] = ((float) meas.CGY - meas.GYoff) * gyro_multiplier;
-		meas.GZ[meas.head] = ((float) meas.CGZ - meas.GZoff) * gyro_multiplier;
+				/* sprintf(measurement_buffer, ", %f, %f, %f, %f, %f, %f\n", 
+					((float) ((int16_t) (( meas.FIFO[i + 0] << 8) | meas.FIFO[i + 1]))),
+					((float) ((int16_t)(( meas.FIFO[i + 2] << 8) | meas.FIFO[i + 3]))),
+					((float) ((int16_t)(( meas.FIFO[i + 4] << 8) | meas.FIFO[i + 5]))),
+					((float) ((int16_t)(( meas.FIFO[i + 6] << 8) | meas.FIFO[i + 7]))),
+					((float) ((int16_t)(( meas.FIFO[i + 8] << 8) | meas.FIFO[i + 9]))),
+					((float) ((int16_t)(( meas.FIFO[i + 10] << 8) | meas.FIFO[i + 11])))); */
+				strcat(message_buffer, measurement_buffer);
+			}
 
-		meas.head = (meas.head + 1) & (FIFO_DEPTH - 1);
+			esp_spp_write(HANDLER, strlen(message_buffer), (uint8_t *)message_buffer);
+			memcpy(message_buffer, "\0", 1);
+		}
 	}
 }
 
@@ -99,7 +112,7 @@ static void TG1T0_task(void *arg)
 		timer_event_t evt;
 		xQueueReceive(timer_queue_1, &evt, portMAX_DELAY);
 		
-		if (connected)
+/* 		if (connected)
 		{
 			int snap = meas.head;
 			while (meas.tail != snap)									// Take items off the FIFO & format message
@@ -121,15 +134,14 @@ static void TG1T0_task(void *arg)
 			}
 		}
 		else															// Blink the LED until connection established
-		{
-			gpio_set_level(GPIO_NUM_2, 1);
-			vTaskDelay(100 / portTICK_PERIOD_MS);
-			gpio_set_level(GPIO_NUM_2, 0);
-			vTaskDelay(100 / portTICK_PERIOD_MS);
-			gpio_set_level(GPIO_NUM_2, 1);
-			vTaskDelay(100 / portTICK_PERIOD_MS);
-			gpio_set_level(GPIO_NUM_2, 0);
-		}
+		{ */
+		gpio_set_level(GPIO_NUM_2, 1);
+		vTaskDelay(100 / portTICK_PERIOD_MS);
+		gpio_set_level(GPIO_NUM_2, 0);
+		vTaskDelay(100 / portTICK_PERIOD_MS);
+		gpio_set_level(GPIO_NUM_2, 1);
+		vTaskDelay(100 / portTICK_PERIOD_MS);
+		gpio_set_level(GPIO_NUM_2, 0);
 	}
 }
 
@@ -286,11 +298,8 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 		case ESP_SPP_CLOSE_EVT:
 			ESP_LOGI(SPP_TAG, "ESP_SPP_CLOSE_EVT");
 			timer_pause(TIMER_GROUP_0, TIMER_0);
-			timer_pause(TIMER_GROUP_1, TIMER_0);
 			ICM20689_toggleSensors(0);
-			//ICM20689_toggleFIFO(0);
-			connected = false;
-			timer_set_alarm_value(TIMER_GROUP_1, TIMER_0, TIMER_GROUP_1_WAIT_SEC * TIMER_SCALE);
+			ICM20689_toggleFIFO(0);
 			timer_start(TIMER_GROUP_1, TIMER_0);
 			break;
 		case ESP_SPP_START_EVT:
@@ -312,11 +321,8 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 			ESP_LOGI(SPP_TAG, "ESP_SPP_SRV_OPEN_EVT");
 			HANDLER = param->srv_open.handle;
 			ICM20689_toggleSensors(1);
-			//ICM20689_toggleFIFO(1);
+			ICM20689_toggleFIFO(1);
 			timer_pause(TIMER_GROUP_1, TIMER_0);
-			connected = true;
-			timer_set_alarm_value(TIMER_GROUP_1, TIMER_0, TIMER_GROUP_1_FIFO_SEC * TIMER_SCALE);
-			timer_start(TIMER_GROUP_1, TIMER_0);
 			timer_start(TIMER_GROUP_0, TIMER_0);
 			break;
 		default:

@@ -105,7 +105,7 @@ xQueueHandle timer_queue_1;
 
 #define TIMER_DIVIDER           16                                  // Hardware timer clock divider
 #define TIMER_SCALE             (TIMER_BASE_CLK / TIMER_DIVIDER)    // convert counter value to seconds
-#define TIMER_GROUP_0_MEAS_SEC  (0.01)                             // IMU measurement period
+#define TIMER_GROUP_0_MEAS_SEC  (0.3)                             // IMU measurement period
 #define TIMER_GROUP_1_WAIT_SEC  (3.0)                               // Connection status LED period
 #define TIMER_GROUP_1_FIFO_SEC  (0.1)                               // FIFO clearing & BT message period
 
@@ -116,10 +116,8 @@ volatile measurement meas =
     .head = 0, .tail = 0, .size = FIFO_DEPTH
 };
 
-static volatile bool connected = false;
-static volatile bool forward = false;
 static char measurement_buffer[100] = "\0";
-static char message_buffer[1000] = "\0";
+static char message_buffer[3000] = "\0";
 
 #define MEASUREMENT_BIT_LENGTH  16
 #define ACCEL_FULL_SCALE        4
