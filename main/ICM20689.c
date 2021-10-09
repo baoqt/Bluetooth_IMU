@@ -565,7 +565,7 @@ void ICM20689_ConfigureLowPassFilter()
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
-    trans.tx_data[0] |= (ICM20689_LP_MODE_CFG_G_AVGCFG_MASK & (0x4 << 4));
+    trans.tx_data[0] |= (ICM20689_LP_MODE_CFG_G_AVGCFG_MASK & ());
     spi_device_transmit(spi, &trans); */
 }
 

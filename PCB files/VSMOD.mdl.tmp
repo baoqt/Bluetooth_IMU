@@ -1,0 +1,2 @@
+* Autodesk EAGLE
+.MODEL VSMOD SW(VT=1V VH=0 RON=1e-3 ROFF=1e12)
