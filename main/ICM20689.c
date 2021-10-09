@@ -20,7 +20,7 @@ spi_device_interface_config_t devcfg =
     .mode = 3,
     .cs_ena_pretrans = 1,
     .cs_ena_posttrans = 1,
-	.clock_speed_hz = 1*1000*1000,						// 10MHz CLK
+	.clock_speed_hz = 8*1000*1000,						// 10MHz CLK
 	.spics_io_num = 15,
     .flags = SPI_DEVICE_HALFDUPLEX,
 	.queue_size = 12,
@@ -65,6 +65,12 @@ void ICM20689_getMeas(volatile measurement* meas)
 void ICM20689_calibrate(volatile measurement* meas, int trials)
 {
     printf("\n---------------\nCalibrating values from the sensor...\n\n");
+    meas->AXoff = 0;
+	meas->AYoff = 0;
+	meas->AZoff = 0;
+	meas->GXoff = 0;
+	meas->GYoff = 0;
+	meas->GZoff = 0;
 
 	for (int i = 0; i < trials; i++)
 	{	
@@ -76,6 +82,8 @@ void ICM20689_calibrate(volatile measurement* meas, int trials)
 		meas->GXoff += meas->CGX;
 		meas->GYoff += meas->CGY;
 		meas->GZoff += meas->CGZ;
+
+        vTaskDelay(10 / portTICK_PERIOD_MS);
 	}
 	
 	meas->AXoff /= trials;
@@ -84,7 +92,7 @@ void ICM20689_calibrate(volatile measurement* meas, int trials)
 	meas->GXoff /= trials;
 	meas->GYoff /= trials;
 	meas->GZoff /= trials;
-	
+
 	printf("Calibration completed:\n    AXoffset: 0x%04X		GXoffset: 0x%04X\n    AYoffset: 0x%04X		GYoffset: 0x%04X\n    AZoffset: 0x%04X		GZoffset: 0x%04X\n", 
 		(uint16_t) meas->AXoff, (uint16_t) meas->GXoff,
 		(uint16_t) meas->AYoff, (uint16_t) meas->GYoff,
@@ -145,6 +153,8 @@ void ICM20689_SelfTest(volatile measurement* meas)
 		gSTAvg[0] += meas->CGX;
 		gSTAvg[1] += meas->CGY;
 		gSTAvg[2] += meas->CGZ;
+
+        vTaskDelay(10 / portTICK_PERIOD_MS);
 	}
 
 	for (int index = 0; index < 3; index++)
@@ -166,6 +176,8 @@ void ICM20689_SelfTest(volatile measurement* meas)
 		gAvg[0] += meas->CGX;
 		gAvg[1] += meas->CGY;
 		gAvg[2] += meas->CGZ;
+
+        vTaskDelay(10 / portTICK_PERIOD_MS);
 	}
 
 	for (int index = 0; index < 3; index++)
@@ -435,7 +447,7 @@ int ICM20689_readFullFIFO(volatile measurement* meas)
 
     spi_device_transmit(spi, &trans);
 
-    fifoCount = ((uint16_t) trans.rx_data[0] << 8);
+    fifoCount = trans.rx_data[0] << 8;
 
     trans.flags = SPI_TRANS_USE_RXDATA;
     trans.addr = ICM20689_FIFO_COUNTL_REG | READ;
@@ -446,9 +458,9 @@ int ICM20689_readFullFIFO(volatile measurement* meas)
 
     spi_device_transmit(spi, &trans);
 
-    fifoCount |= (uint16_t) trans.rx_data[0];
+    fifoCount |= trans.rx_data[0];
 
-    //printf("FIFO Count: %d\n", fifoCount);
+//    printf("FIFO Count: %d\n", fifoCount);
 
     if (fifoCount > 0)
     {
@@ -460,13 +472,6 @@ int ICM20689_readFullFIFO(volatile measurement* meas)
         trans.rx_buffer = meas->FIFO;
 
         spi_device_transmit(spi, &trans);
-
-        /* meas->CAX = (((uint8_t*) trans.rx_buffer)[0] << 8) | ((uint8_t*) trans.rx_buffer)[1];
-        meas->CAY = (((uint8_t*) trans.rx_buffer)[2] << 8) | ((uint8_t*) trans.rx_buffer)[3];
-        meas->CAZ = (((uint8_t*) trans.rx_buffer)[4] << 8) | ((uint8_t*) trans.rx_buffer)[5];
-        meas->CGX = (((uint8_t*) trans.rx_buffer)[6] << 8) | ((uint8_t*) trans.rx_buffer)[7];
-        meas->CGY = (((uint8_t*) trans.rx_buffer)[8] << 8) | ((uint8_t*) trans.rx_buffer)[9];
-        meas->CGZ = (((uint8_t*) trans.rx_buffer)[10] << 8) | ((uint8_t*) trans.rx_buffer)[11]; */
 
         trans.rx_buffer = NULL;
     }
@@ -492,8 +497,25 @@ void ICM20689_ConfigureLowPassFilter()
     trans.tx_buffer = NULL;
     trans.tx_data[0] &= ~(ICM20689_ACCEL_CONFIG_2_ACCEL_FCHOICE_B_MASK) 
                      &  ~(ICM20689_ACCEL_CONFIG_2_A_DLPF_CFG_MASK);
-    trans.tx_data[0] |= (ICM20689_ACCEL_CONFIG_2_A_DLPF_CFG_MASK & 0x6);
+    trans.tx_data[0] |=  (ICM20689_ACCEL_CONFIG_2_A_DLPF_CFG_MASK & 0x6);
     spi_device_transmit(spi, &trans);
+
+/*     trans.flags = SPI_TRANS_USE_RXDATA;
+    trans.addr = ICM20689_LP_MODE_CFG_REG | READ;
+    trans.length = 8;
+    trans.rxlength = 8;
+    trans.rx_buffer = NULL;
+    trans.tx_buffer = NULL;
+    spi_device_transmit(spi, &trans);
+    trans.tx_data[0] = trans.rx_data[0];
+
+    trans.flags = SPI_TRANS_USE_TXDATA;
+    trans.addr = ICM20689_LP_MODE_CFG_REG | WRITE;
+    trans.rxlength = 0;
+    trans.rx_buffer = NULL;
+    trans.tx_buffer = NULL;
+    trans.tx_data[0] |= ICM20689_LP_MODE_CFG_GYRO_CYCLE_MASK;
+    spi_device_transmit(spi, &trans); */
 
     trans.flags = SPI_TRANS_USE_RXDATA;
     trans.addr = ICM20689_CONFIG_REG | READ;
@@ -512,6 +534,39 @@ void ICM20689_ConfigureLowPassFilter()
     trans.tx_data[0] &= ~(ICM20689_CONFIG_DLPF_CFG_MASK);
     trans.tx_data[0] |= (ICM20689_CONFIG_DLPF_CFG_MASK & 0x6);
     spi_device_transmit(spi, &trans);
+
+    trans.flags = SPI_TRANS_USE_RXDATA;
+    trans.addr = ICM20689_GYRO_CONFIG_REG | READ;
+    trans.length = 8;
+    trans.rxlength = 8;
+    trans.rx_buffer = NULL;
+    trans.tx_buffer = NULL;
+    spi_device_transmit(spi, &trans);
+    trans.tx_data[0] = trans.rx_data[0];
+
+    trans.flags = SPI_TRANS_USE_TXDATA;
+    trans.addr = ICM20689_GYRO_CONFIG_REG | WRITE;
+    trans.rxlength = 0;
+    trans.rx_buffer = NULL;
+    trans.tx_buffer = NULL;
+    trans.tx_data[0] &= ~(ICM20689_GYRO_CONFIG_FCHOICE_B_MASK);
+    spi_device_transmit(spi, &trans);
+
+/*     trans.flags = SPI_TRANS_USE_RXDATA;
+    trans.addr = ICM20689_LP_MODE_CFG_REG | READ;
+    trans.length = 8;
+    trans.rxlength = 8;
+    trans.rx_buffer = NULL;
+    trans.tx_buffer = NULL;
+    spi_device_transmit(spi, &trans);
+
+    trans.flags = SPI_TRANS_USE_TXDATA;
+    trans.addr = ICM20689_LP_MODE_CFG_REG | WRITE;
+    trans.rxlength = 0;
+    trans.rx_buffer = NULL;
+    trans.tx_buffer = NULL;
+    trans.tx_data[0] |= (ICM20689_LP_MODE_CFG_G_AVGCFG_MASK & (0x4 << 4));
+    spi_device_transmit(spi, &trans); */
 }
 
 void ICM20689_setSleepDisabled()
@@ -545,22 +600,6 @@ void ICM20689_setSleepDisabled()
     trans.tx_data[0] |= ICM20689_PWR_MGMT_1_TEMP_DIS_MASK | (ICM20689_PWR_MGMT_1_CLKSEL_MASK & 0x1);
     spi_device_transmit(spi, &trans);
 
-/*     trans.flags = SPI_TRANS_USE_RXDATA;
-    trans.addr = ICM20689_LP_MODE_CFG_REG | READ;
-    trans.length = 8;
-    trans.rxlength = 8;
-    trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
-    spi_device_transmit(spi, &trans);
-
-    trans.flags = SPI_TRANS_USE_TXDATA;
-    trans.addr = ICM20689_LP_MODE_CFG_REG | WRITE;
-    trans.rxlength = 0;
-    trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
-    trans.tx_data[0] |= (ICM20689_LP_MODE_CFG_G_AVGCFG_MASK & (0x4 << 4));
-    spi_device_transmit(spi, &trans); */
-
     ICM20689_whoAmI();
 }
 
@@ -591,7 +630,7 @@ void ICM20689_init(volatile measurement* meas)
     ICM20689_ConfigureLowPassFilter();
 
     ICM20689_SelfTest(meas);
-    ICM20689_calibrate(meas, 100);
+    ICM20689_calibrate(meas, 300);
     
     ICM20689_toggleSensors(0);
 }

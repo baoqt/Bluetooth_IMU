@@ -22,13 +22,13 @@
 
 typedef struct measurement
 {
-	float AXoff;										    // Accelerometer offset values
-	float AYoff;
-	float AZoff;
+	volatile float AXoff;										    // Accelerometer offset values
+	volatile float AYoff;
+	volatile float AZoff;
 
-	float GXoff;										    // Gyroscope offset values
-	float GYoff;
-	float GZoff;
+	volatile float GXoff;										    // Gyroscope offset values
+	volatile float GYoff;
+	volatile float GZoff;
 
 	volatile int16_t CAX;
 	volatile int16_t CAY;
@@ -38,19 +38,7 @@ typedef struct measurement
 	volatile int16_t CGY;
 	volatile int16_t CGZ;
 
-	uint8_t* FIFO;
-
-	volatile float AX[FIFO_DEPTH];						    // IMU measurement FIFO
-	volatile float AY[FIFO_DEPTH];						    // Accelerometer processed data
-	volatile float AZ[FIFO_DEPTH];
-
-	volatile float GX[FIFO_DEPTH];						    // Gyroscope processed data
-	volatile float GY[FIFO_DEPTH];
-	volatile float GZ[FIFO_DEPTH];
-	
-	volatile int head;									    // Entry of FIFO
-	volatile int tail;									    // Exit of FIFO
-	volatile int size;									    // Size of FIFO
+	volatile uint8_t* FIFO;
 }measurement;
 
 #define ICM20689_SELF_TEST_X_GYRO_REG					0x00

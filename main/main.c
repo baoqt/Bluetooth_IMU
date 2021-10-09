@@ -2,6 +2,7 @@
 
 void app_main()
 {
+	//vTaskDelay(5000 / portTICK_PERIOD_MS);
     printf("\nBootup complete\n\n");
 	GPIO_init();
 	printf("GPIO intialized\n");
@@ -77,10 +78,53 @@ static void TG0T0_task(void *arg)
         timer_event_t evt;
         xQueueReceive(timer_queue_0, &evt, portMAX_DELAY);
 		uint16_t fifoCount = ICM20689_readFullFIFO(&meas);
+
 		if (fifoCount > 0)
 		{
+			/* if (j == 0)
+			{
+				AXavg = 0;
+				AYavg = 0;
+				AZavg = 0;
+				GXavg = 0;
+				GYavg = 0;
+				GZavg = 0;
+			} */
+
 			for (int i = 0; i < fifoCount; i += 12)
 			{
+				
+				/* AXavg += (((float) ((int16_t) ((meas.FIFO[i + 0] << 8) | meas.FIFO[i + 1]))) - meas.AXoff) * accel_multiplier;
+				AYavg += (((float) ((int16_t) ((meas.FIFO[i + 2] << 8) | meas.FIFO[i + 3]))) - meas.AYoff) * accel_multiplier;
+				AZavg += (((float) ((int16_t) ((meas.FIFO[i + 4] << 8) | meas.FIFO[i + 5]))) - meas.AZoff) * accel_multiplier;
+				GXavg += (((float) ((int16_t) ((meas.FIFO[i + 6] << 8) | meas.FIFO[i + 7]))) - meas.GXoff) * gyro_multiplier;
+				GYavg += (((float) ((int16_t) ((meas.FIFO[i + 8] << 8) | meas.FIFO[i + 9]))) - meas.GYoff) * gyro_multiplier;
+				GZavg += (((float) ((int16_t) ((meas.FIFO[i + 10] << 8) | meas.FIFO[i + 11]))) - meas.GZoff) * gyro_multiplier;
+				
+				j++;
+
+				if (j > 3)
+				{
+					j = 0;
+
+					AXavg /= (4);
+					AYavg /= (4);
+					AZavg /= (4);
+					GXavg /= (4);
+					GYavg /= (4);
+					GZavg /= (4);
+
+					sprintf(measurement_buffer, ", %f, %f, %f, %f, %f, %f\n", 
+					AXavg, AYavg, AZavg, GXavg, GYavg, GZavg);
+					strcat(message_buffer, measurement_buffer);
+
+					AXavg = 0;
+					AYavg = 0;
+					AZavg = 0;
+					GXavg = 0;
+					GYavg = 0;
+					GZavg = 0;
+				} */
 				sprintf(measurement_buffer, ", %f, %f, %f, %f, %f, %f\n", 
 					(((float) ((int16_t) ((meas.FIFO[i + 0] << 8) | meas.FIFO[i + 1]))) - meas.AXoff) * accel_multiplier,
 					(((float) ((int16_t) ((meas.FIFO[i + 2] << 8) | meas.FIFO[i + 3]))) - meas.AYoff) * accel_multiplier,
@@ -89,13 +133,6 @@ static void TG0T0_task(void *arg)
 					(((float) ((int16_t) ((meas.FIFO[i + 8] << 8) | meas.FIFO[i + 9]))) - meas.GYoff) * gyro_multiplier,
 					(((float) ((int16_t) ((meas.FIFO[i + 10] << 8) | meas.FIFO[i + 11]))) - meas.GZoff) * gyro_multiplier);
 
-				/* sprintf(measurement_buffer, ", %f, %f, %f, %f, %f, %f\n", 
-					((float) ((int16_t) (( meas.FIFO[i + 0] << 8) | meas.FIFO[i + 1]))),
-					((float) ((int16_t)(( meas.FIFO[i + 2] << 8) | meas.FIFO[i + 3]))),
-					((float) ((int16_t)(( meas.FIFO[i + 4] << 8) | meas.FIFO[i + 5]))),
-					((float) ((int16_t)(( meas.FIFO[i + 6] << 8) | meas.FIFO[i + 7]))),
-					((float) ((int16_t)(( meas.FIFO[i + 8] << 8) | meas.FIFO[i + 9]))),
-					((float) ((int16_t)(( meas.FIFO[i + 10] << 8) | meas.FIFO[i + 11])))); */
 				strcat(message_buffer, measurement_buffer);
 			}
 
@@ -112,29 +149,6 @@ static void TG1T0_task(void *arg)
 		timer_event_t evt;
 		xQueueReceive(timer_queue_1, &evt, portMAX_DELAY);
 		
-/* 		if (connected)
-		{
-			int snap = meas.head;
-			while (meas.tail != snap)									// Take items off the FIFO & format message
-			{
-				forward = true;;
-				sprintf(measurement_buffer, ", %f, %f, %f, %f, %f, %f\n", 
-					meas.AX[meas.tail], meas.AY[meas.tail], meas.AZ[meas.tail],
-					meas.GX[meas.tail], meas.GY[meas.tail], meas.GZ[meas.tail]);
-				strcat(message_buffer, measurement_buffer);
-				;
-				meas.tail = (meas.tail + 1) & (FIFO_DEPTH - 1);
-			}
-			
-			if (forward)
-			{
-				esp_spp_write(HANDLER, strlen(message_buffer), (uint8_t *)message_buffer);
-				memcpy(message_buffer, "\0", 1);
-				forward = false;
-			}
-		}
-		else															// Blink the LED until connection established
-		{ */
 		gpio_set_level(GPIO_NUM_2, 1);
 		vTaskDelay(100 / portTICK_PERIOD_MS);
 		gpio_set_level(GPIO_NUM_2, 0);
@@ -321,6 +335,7 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 			ESP_LOGI(SPP_TAG, "ESP_SPP_SRV_OPEN_EVT");
 			HANDLER = param->srv_open.handle;
 			ICM20689_toggleSensors(1);
+			//ICM20689_calibrate(&meas, 300);
 			ICM20689_toggleFIFO(1);
 			timer_pause(TIMER_GROUP_1, TIMER_0);
 			timer_start(TIMER_GROUP_0, TIMER_0);

@@ -105,26 +105,32 @@ xQueueHandle timer_queue_1;
 
 #define TIMER_DIVIDER           16                                  // Hardware timer clock divider
 #define TIMER_SCALE             (TIMER_BASE_CLK / TIMER_DIVIDER)    // convert counter value to seconds
-#define TIMER_GROUP_0_MEAS_SEC  (0.3)                             // IMU measurement period
+#define TIMER_GROUP_0_MEAS_SEC  (0.33)                              // IMU measurement period
 #define TIMER_GROUP_1_WAIT_SEC  (3.0)                               // Connection status LED period
-#define TIMER_GROUP_1_FIFO_SEC  (0.1)                               // FIFO clearing & BT message period
 
 volatile measurement meas = 
 {
     .AXoff = 0, .AYoff = 0, .AZoff = 0,
-    .GXoff = 0, .GYoff = 0, .GZoff = 0,
-    .head = 0, .tail = 0, .size = FIFO_DEPTH
+    .GXoff = 0, .GYoff = 0, .GZoff = 0
 };
 
 static char measurement_buffer[100] = "\0";
 static char message_buffer[3000] = "\0";
+
+/* volatile int j;
+volatile float AXavg;
+volatile float AYavg;
+volatile float AZavg;
+volatile float GXavg;
+volatile float GYavg;
+volatile float GZavg; */
 
 #define MEASUREMENT_BIT_LENGTH  16
 #define ACCEL_FULL_SCALE        4
 #define GYRO_FULL_SCALE         500
 #define GRAVITY_CONSTANT        9.81f
 
-static float accel_multiplier = (ACCEL_FULL_SCALE * GRAVITY_CONSTANT) / pow(2, MEASUREMENT_BIT_LENGTH - 1);
+static float accel_multiplier = (ACCEL_FULL_SCALE * GRAVITY_CONSTANT) / pow(2, MEASUREMENT_BIT_LENGTH);
 static float gyro_multiplier = GYRO_FULL_SCALE / pow(2, MEASUREMENT_BIT_LENGTH - 1);
 
 void TIMG0_T0_init(int timer_idx, bool auto_reload, double timer_interval_sec);

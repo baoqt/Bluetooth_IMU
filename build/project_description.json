@@ -6,7 +6,7 @@
     "config_defaults":    "C:/Users/baoqt/Documents/VisualStudio/Bluetooth_IMU/sdkconfig.defaults",
     "app_elf":            "Bluetooth_IMU.elf",
     "app_bin":            "Bluetooth_IMU.bin",
-    "git_revision":       "v4.2-47-g2532ddd9f",
+    "git_revision":       "v4.2-47-g2532ddd9f-dirty",
     "target":             "esp32",
     "phy_data_partition": "",
     "monitor_baud" :      "115200",
