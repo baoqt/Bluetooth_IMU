@@ -48,7 +48,7 @@
 ///////////////////////////////////////////////////////////////////
 #define SPP_TAG "Bluetooth_IMU"
 #define SPP_SERVER_NAME "SPP_SERVER"
-#define DEVICE_NAME "Bluetooth_IMU"
+#define DEVICE_NAME "Bluetooth_IMU_A"
 
 ///////////////////////////////////////////////////////////////////
 //	Timer group 0, timer 0 configuration and control registers
@@ -130,7 +130,7 @@ volatile float GZavg; */
 #define GYRO_FULL_SCALE         500
 #define GRAVITY_CONSTANT        9.81f
 
-static float accel_multiplier = (ACCEL_FULL_SCALE * GRAVITY_CONSTANT) / pow(2, MEASUREMENT_BIT_LENGTH);
+static float accel_multiplier = (ACCEL_FULL_SCALE * GRAVITY_CONSTANT) / pow(2, MEASUREMENT_BIT_LENGTH - 1);
 static float gyro_multiplier = GYRO_FULL_SCALE / pow(2, MEASUREMENT_BIT_LENGTH - 1);
 
 void TIMG0_T0_init(int timer_idx, bool auto_reload, double timer_interval_sec);

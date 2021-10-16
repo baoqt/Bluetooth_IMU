@@ -198,7 +198,6 @@ void ICM20689_setGyroSelfTest()
     trans.addr = ICM20689_GYRO_CONFIG_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -207,10 +206,9 @@ void ICM20689_setGyroSelfTest()
     trans.addr = ICM20689_GYRO_CONFIG_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] |= ICM20689_GYRO_CONFIG_XG_ST_MASK 
-                    |  ICM20689_GYRO_CONFIG_YG_ST_MASK 
-                    |  ICM20689_GYRO_CONFIG_ZG_ST_MASK;
+                     |  ICM20689_GYRO_CONFIG_YG_ST_MASK 
+                     |  ICM20689_GYRO_CONFIG_ZG_ST_MASK;
     spi_device_transmit(spi, &trans);
 }
 
@@ -220,7 +218,6 @@ void ICM20689_setAccelSelfTest()
     trans.addr = ICM20689_ACCEL_CONFIG_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -229,10 +226,9 @@ void ICM20689_setAccelSelfTest()
     trans.addr = ICM20689_ACCEL_CONFIG_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] |= ICM20689_ACCEL_CONFIG_XA_ST_MASK 
-                    |  ICM20689_ACCEL_CONFIG_YA_ST_MASK 
-                    |  ICM20689_ACCEL_CONFIG_ZA_ST_MASK;
+                     |  ICM20689_ACCEL_CONFIG_YA_ST_MASK 
+                     |  ICM20689_ACCEL_CONFIG_ZA_ST_MASK;
     spi_device_transmit(spi, &trans);
 }
 
@@ -242,7 +238,6 @@ void ICM20689_clearGyroSelfTest()
     trans.addr = ICM20689_GYRO_CONFIG_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -251,10 +246,9 @@ void ICM20689_clearGyroSelfTest()
     trans.addr = ICM20689_GYRO_CONFIG_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] &= ~(ICM20689_GYRO_CONFIG_XG_ST_MASK) 
-                    &  ~(ICM20689_GYRO_CONFIG_YG_ST_MASK) 
-                    &  ~(ICM20689_GYRO_CONFIG_ZG_ST_MASK);
+                     &  ~(ICM20689_GYRO_CONFIG_YG_ST_MASK) 
+                     &  ~(ICM20689_GYRO_CONFIG_ZG_ST_MASK);
     spi_device_transmit(spi, &trans);
 }
 
@@ -264,7 +258,6 @@ void ICM20689_clearAccelSelfTest()
     trans.addr = ICM20689_ACCEL_CONFIG_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -273,10 +266,9 @@ void ICM20689_clearAccelSelfTest()
     trans.addr = ICM20689_ACCEL_CONFIG_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] &= ~(ICM20689_ACCEL_CONFIG_XA_ST_MASK) 
-                    &  ~(ICM20689_ACCEL_CONFIG_YA_ST_MASK) 
-                    &  ~(ICM20689_ACCEL_CONFIG_ZA_ST_MASK);
+                     &  ~(ICM20689_ACCEL_CONFIG_YA_ST_MASK) 
+                     &  ~(ICM20689_ACCEL_CONFIG_ZA_ST_MASK);
     spi_device_transmit(spi, &trans);
 }
 
@@ -286,7 +278,6 @@ void ICM20689_setFullScaleGyroRange(uint8_t range)
     trans.addr = ICM20689_GYRO_CONFIG_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -295,7 +286,6 @@ void ICM20689_setFullScaleGyroRange(uint8_t range)
     trans.addr = ICM20689_GYRO_CONFIG_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] &= ~(ICM20689_GYRO_CONFIG_FS_SEL_MASK);
     trans.tx_data[0] |= range;
     spi_device_transmit(spi, &trans);
@@ -307,7 +297,6 @@ void ICM20689_setFullScaleAccelRange(uint8_t range)
     trans.addr = ICM20689_ACCEL_CONFIG_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -316,10 +305,16 @@ void ICM20689_setFullScaleAccelRange(uint8_t range)
     trans.addr = ICM20689_ACCEL_CONFIG_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] &= ~(ICM20689_ACCEL_CONFIG_ACCEL_FS_SEL_MASK);
-    trans.tx_data[0] |= range;
+    trans.tx_data[0] = range;
     spi_device_transmit(spi, &trans);
+
+    trans.flags = SPI_TRANS_USE_RXDATA;
+    trans.addr = ICM20689_ACCEL_CONFIG_REG | READ;
+    trans.length = 8;
+    trans.rxlength = 8;
+    trans.tx_buffer = NULL;
+    
 }
 
 void ICM20689_setSampleRate(uint16_t rate)
@@ -331,7 +326,6 @@ void ICM20689_setSampleRate(uint16_t rate)
     trans.length = 8;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] = div;
     spi_device_transmit(spi, &trans);
 }
@@ -342,7 +336,6 @@ void ICM20689_toggleSensors(uint8_t state)
     trans.addr = ICM20689_PWR_MGMT_2_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -351,7 +344,6 @@ void ICM20689_toggleSensors(uint8_t state)
     trans.addr = ICM20689_PWR_MGMT_2_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
 
     if (state > 0)                                  // Turn accel and gyro sensors on
     {
@@ -372,7 +364,6 @@ void ICM20689_toggleFIFO(uint8_t state)
     trans.length = 8;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] |= ICM20689_USER_CTRL_FIFO_RST_MASK;
     spi_device_transmit(spi, &trans);
 
@@ -381,7 +372,6 @@ void ICM20689_toggleFIFO(uint8_t state)
     trans.flags = SPI_TRANS_USE_RXDATA;
     trans.addr = ICM20689_USER_CTRL_REG | READ;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -390,7 +380,6 @@ void ICM20689_toggleFIFO(uint8_t state)
     trans.addr = ICM20689_USER_CTRL_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
 
     if (state > 0)                                  // Turn FIFO on
     {
@@ -400,13 +389,11 @@ void ICM20689_toggleFIFO(uint8_t state)
     {
         trans.tx_data[0] &= ~(ICM20689_USER_CTRL_FIFO_EN_MASK);
     }
-
     spi_device_transmit(spi, &trans);
 
     trans.flags = SPI_TRANS_USE_RXDATA;
     trans.addr = ICM20689_FIFO_EN_REG | READ;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -415,7 +402,6 @@ void ICM20689_toggleFIFO(uint8_t state)
     trans.addr = ICM20689_FIFO_EN_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
 
     if (state > 0)
     {
@@ -443,7 +429,6 @@ int ICM20689_readFullFIFO(volatile measurement* meas)
     trans.length = 8;
     trans.rxlength = 8;
     trans.tx_buffer = NULL;
-    trans.rx_buffer = NULL;
 
     spi_device_transmit(spi, &trans);
 
@@ -454,7 +439,6 @@ int ICM20689_readFullFIFO(volatile measurement* meas)
     trans.length = 8;
     trans.rxlength = 8;
     trans.tx_buffer = NULL;
-    trans.rx_buffer = NULL;
 
     spi_device_transmit(spi, &trans);
 
@@ -485,7 +469,6 @@ void ICM20689_ConfigureLowPassFilter()
     trans.addr = ICM20689_ACCEL_CONFIG_2_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -494,17 +477,15 @@ void ICM20689_ConfigureLowPassFilter()
     trans.addr = ICM20689_ACCEL_CONFIG_2_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] &= ~(ICM20689_ACCEL_CONFIG_2_ACCEL_FCHOICE_B_MASK) 
                      &  ~(ICM20689_ACCEL_CONFIG_2_A_DLPF_CFG_MASK);
-    trans.tx_data[0] |=  (ICM20689_ACCEL_CONFIG_2_A_DLPF_CFG_MASK & 0x6);
+    trans.tx_data[0] |=  (ICM20689_ACCEL_CONFIG_2_A_DLPF_CFG_MASK & 0x3);
     spi_device_transmit(spi, &trans);
 
 /*     trans.flags = SPI_TRANS_USE_RXDATA;
     trans.addr = ICM20689_LP_MODE_CFG_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -513,7 +494,6 @@ void ICM20689_ConfigureLowPassFilter()
     trans.addr = ICM20689_LP_MODE_CFG_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] |= ICM20689_LP_MODE_CFG_GYRO_CYCLE_MASK;
     spi_device_transmit(spi, &trans); */
 
@@ -521,7 +501,6 @@ void ICM20689_ConfigureLowPassFilter()
     trans.addr = ICM20689_CONFIG_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -530,16 +509,14 @@ void ICM20689_ConfigureLowPassFilter()
     trans.addr = ICM20689_CONFIG_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] &= ~(ICM20689_CONFIG_DLPF_CFG_MASK);
-    trans.tx_data[0] |= (ICM20689_CONFIG_DLPF_CFG_MASK & 0x6);
+    trans.tx_data[0] |= (ICM20689_CONFIG_DLPF_CFG_MASK & 0x1);
     spi_device_transmit(spi, &trans);
 
     trans.flags = SPI_TRANS_USE_RXDATA;
     trans.addr = ICM20689_GYRO_CONFIG_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     trans.tx_data[0] = trans.rx_data[0];
@@ -548,7 +525,6 @@ void ICM20689_ConfigureLowPassFilter()
     trans.addr = ICM20689_GYRO_CONFIG_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] &= ~(ICM20689_GYRO_CONFIG_FCHOICE_B_MASK);
     spi_device_transmit(spi, &trans);
 
@@ -556,7 +532,6 @@ void ICM20689_ConfigureLowPassFilter()
     trans.addr = ICM20689_LP_MODE_CFG_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
 
@@ -564,7 +539,6 @@ void ICM20689_ConfigureLowPassFilter()
     trans.addr = ICM20689_LP_MODE_CFG_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] |= (ICM20689_LP_MODE_CFG_G_AVGCFG_MASK & ());
     spi_device_transmit(spi, &trans); */
 }
@@ -575,7 +549,6 @@ void ICM20689_setSleepDisabled()
     trans.addr = ICM20689_PWR_MGMT_1_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] = ICM20689_PWR_MGMT_1_DEVICE_RESET_MASK;
     spi_device_transmit(spi, &trans);
 
@@ -585,7 +558,6 @@ void ICM20689_setSleepDisabled()
     trans.addr = ICM20689_PWR_MGMT_1_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
 
@@ -595,7 +567,6 @@ void ICM20689_setSleepDisabled()
     trans.addr = ICM20689_PWR_MGMT_1_REG | WRITE;
     trans.rxlength = 0;
     trans.rx_buffer = NULL;
-    trans.tx_buffer = NULL;
     trans.tx_data[0] &= ~(ICM20689_PWR_MGMT_1_CLKSEL_MASK) & ~(ICM20689_PWR_MGMT_1_SLEEP_MASK);
     trans.tx_data[0] |= ICM20689_PWR_MGMT_1_TEMP_DIS_MASK | (ICM20689_PWR_MGMT_1_CLKSEL_MASK & 0x1);
     spi_device_transmit(spi, &trans);
@@ -609,7 +580,6 @@ void ICM20689_whoAmI()
     trans.addr = ICM20689_WHO_AM_I_REG | READ;
     trans.length = 8;
     trans.rxlength = 8;
-    trans.rx_buffer = NULL;
     trans.tx_buffer = NULL;
     spi_device_transmit(spi, &trans);
     printf("\nWHO_AM_I: 0x%02X\n\n", trans.rx_data[0]);

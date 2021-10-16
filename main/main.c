@@ -126,12 +126,12 @@ static void TG0T0_task(void *arg)
 					GZavg = 0;
 				} */
 				sprintf(measurement_buffer, ", %f, %f, %f, %f, %f, %f\n", 
-					(((float) ((int16_t) ((meas.FIFO[i + 0] << 8) | meas.FIFO[i + 1]))) - meas.AXoff) * accel_multiplier,
-					(((float) ((int16_t) ((meas.FIFO[i + 2] << 8) | meas.FIFO[i + 3]))) - meas.AYoff) * accel_multiplier,
-					(((float) ((int16_t) ((meas.FIFO[i + 4] << 8) | meas.FIFO[i + 5]))) - meas.AZoff) * accel_multiplier,
-					(((float) ((int16_t) ((meas.FIFO[i + 6] << 8) | meas.FIFO[i + 7]))) - meas.GXoff) * gyro_multiplier,
-					(((float) ((int16_t) ((meas.FIFO[i + 8] << 8) | meas.FIFO[i + 9]))) - meas.GYoff) * gyro_multiplier,
-					(((float) ((int16_t) ((meas.FIFO[i + 10] << 8) | meas.FIFO[i + 11]))) - meas.GZoff) * gyro_multiplier);
+					(((float) (((int16_t) (meas.FIFO[i + 0] << 8) | meas.FIFO[i + 1]))) - meas.AXoff) * accel_multiplier,
+					(((float) (((int16_t) (meas.FIFO[i + 2] << 8) | meas.FIFO[i + 3]))) - meas.AYoff) * accel_multiplier,
+					(((float) (((int16_t) (meas.FIFO[i + 4] << 8) | meas.FIFO[i + 5]))) - meas.AZoff) * accel_multiplier,
+					(((float) (((int16_t) (meas.FIFO[i + 6] << 8) | meas.FIFO[i + 7]))) - meas.GXoff) * gyro_multiplier,
+					(((float) (((int16_t) (meas.FIFO[i + 8] << 8) | meas.FIFO[i + 9]))) - meas.GYoff) * gyro_multiplier,
+					(((float) (((int16_t) (meas.FIFO[i + 10] << 8) | meas.FIFO[i + 11]))) - meas.GZoff) * gyro_multiplier);
 
 				strcat(message_buffer, measurement_buffer);
 			}
