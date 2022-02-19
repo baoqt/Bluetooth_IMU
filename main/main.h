@@ -48,7 +48,7 @@
 ///////////////////////////////////////////////////////////////////
 #define SPP_TAG "Bluetooth_IMU"
 #define SPP_SERVER_NAME "SPP_SERVER"
-#define DEVICE_NAME "Bluetooth_IMU_A"
+#define DEVICE_NAME "Bluetooth_IMU_D"
 
 ///////////////////////////////////////////////////////////////////
 //	Timer group 0, timer 0 configuration and control registers

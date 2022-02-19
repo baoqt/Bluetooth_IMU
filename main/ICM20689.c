@@ -479,7 +479,7 @@ void ICM20689_ConfigureLowPassFilter()
     trans.rx_buffer = NULL;
     trans.tx_data[0] &= ~(ICM20689_ACCEL_CONFIG_2_ACCEL_FCHOICE_B_MASK) 
                      &  ~(ICM20689_ACCEL_CONFIG_2_A_DLPF_CFG_MASK);
-    trans.tx_data[0] |=  (ICM20689_ACCEL_CONFIG_2_A_DLPF_CFG_MASK & 0x3);
+    trans.tx_data[0] |=  (ICM20689_ACCEL_CONFIG_2_A_DLPF_CFG_MASK & 0x1);
     spi_device_transmit(spi, &trans);
 
 /*     trans.flags = SPI_TRANS_USE_RXDATA;
