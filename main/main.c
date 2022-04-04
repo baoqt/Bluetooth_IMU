@@ -125,7 +125,7 @@ static void TG0T0_task(void *arg)
 					GYavg = 0;
 					GZavg = 0;
 				} */
-				sprintf(measurement_buffer, ", %f, %f, %f, %f, %f, %f\n", 
+				sprintf(measurement_buffer, "%f,%f,%f,%f,%f,%f\n", 
 					(((float) (((int16_t) (meas.FIFO[i + 0] << 8) | meas.FIFO[i + 1]))) - meas.AXoff) * accel_multiplier,
 					(((float) (((int16_t) (meas.FIFO[i + 2] << 8) | meas.FIFO[i + 3]))) - meas.AYoff) * accel_multiplier,
 					(((float) (((int16_t) (meas.FIFO[i + 4] << 8) | meas.FIFO[i + 5]))) - meas.AZoff) * accel_multiplier,
