@@ -600,7 +600,7 @@ void ICM20689_init(volatile measurement* meas)
     ICM20689_ConfigureLowPassFilter();
 
     ICM20689_SelfTest(meas);
-    ICM20689_calibrate(meas, 300);
+    //ICM20689_calibrate(meas, 300);
     
     ICM20689_toggleSensors(0);
 }
